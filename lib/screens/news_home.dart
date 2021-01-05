@@ -10,20 +10,20 @@ class TopHeadlinesPage extends StatefulWidget {
   _TopHeadlinesPageState createState() => _TopHeadlinesPageState();
 }
 
-class _TopHeadlinesPageState extends State<TopHeadlinesPage> with SingleTickerProviderStateMixin{
+class _TopHeadlinesPageState extends State<TopHeadlinesPage> {
+  String error = "Nothing caught";
   Response _response;
+  int selectedIndex = 0;
   bool loading = false;
   List<String> categories = [
+    'General',
     'Business',
     'Entertainment',
-    'General',
     'Health',
     'Science',
     'Sports',
     'Technology',
   ];
-  final dummyImage =
-      "https://cdn.dribbble.com/users/937082/screenshots/5516643/blob_4x?compress=1&resize=400x300";
 
   @override
   void initState() {
@@ -63,12 +63,14 @@ class _TopHeadlinesPageState extends State<TopHeadlinesPage> with SingleTickerPr
           backgroundColor: Colors.black,
           actions: [
             IconButton(
-                tooltip: "Reload",
-                icon: Icon(
-                  Icons.refresh,
-                  size: 30,
-                ),
-                onPressed: () => fetchTopHeadlinesFromApi())
+              tooltip: "Reload",
+              icon: Icon(
+                Icons.refresh,
+                size: 30,
+              ),
+              onPressed: () =>
+                  fetchTopHeadlinesByCategoryApi(categories[selectedIndex]),
+            )
           ],
         ),
         body: Column(
@@ -81,6 +83,13 @@ class _TopHeadlinesPageState extends State<TopHeadlinesPage> with SingleTickerPr
         ),
       ),
     );
+  }
+
+  buildDebugText() {
+    return Text("Error message from api" +
+        _response.message +
+        "\nError in try-catch " +
+        error);
   }
 
   buildLoadingIndicator() {
@@ -131,7 +140,7 @@ class _TopHeadlinesPageState extends State<TopHeadlinesPage> with SingleTickerPr
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
           child: Column(
             children: [
-              Image.network(article.urlToImage ?? dummyImage),
+              Image.network(article.urlToImage),
               SizedBox(height: 14),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 5.0),
@@ -183,6 +192,7 @@ class _TopHeadlinesPageState extends State<TopHeadlinesPage> with SingleTickerPr
 
   buildListItem(int index) {
     return FlatButton(
+      color: selectedIndex == index ? Colors.white : Colors.black,
       splashColor: Colors.grey,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
@@ -190,12 +200,14 @@ class _TopHeadlinesPageState extends State<TopHeadlinesPage> with SingleTickerPr
           color: Colors.grey,
         ),
       ),
-      onPressed: () =>
-          fetchTopHeadlinesByCategoryApi(categories[index].toLowerCase()),
+      onPressed: () {
+        fetchTopHeadlinesByCategoryApi(categories[index].toLowerCase());
+        setState(() => selectedIndex = index);
+      },
       child: Text(
         categories[index],
         style: TextStyle(
-          color: Colors.white,
+          color: selectedIndex != index ? Colors.white : Colors.black,
         ),
       ),
     );
